@@ -18,6 +18,3 @@ apt-get update
 
 ## install docker
 apt-get install -y lxc-docker
-
-## disable the automatically restart of running containers
-echo 'DOCKER_OPTS=\"-r=false\"' > /etc/default/docker
