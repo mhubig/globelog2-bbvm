@@ -3,20 +3,28 @@
     "ssh_pub_key": "./id_docker.pub"
   },
 
-  "builders": [{
-    "type": "amazon-ebs",
-    "region": "eu-west-1",
-    "source_ami": "ami-8e987ef9",
-    "instance_type": "c1.xlarge",
-    "ssh_username": "ubuntu",
-    "ami_name": "docker {{timestamp}}",
-    "ami_description": "docker image"
-  }],
+  "builders": [
+    { "type": "amazon-ebs",
+      "region": "eu-west-1",
+      "source_ami": "ami-8e987ef9",
+      "instance_type": "t1.micro",
+      "ssh_username": "ubuntu",
+      "ami_name": "docker {{timestamp}}",
+      "ami_description": "docker image"
+    },
+    { "type": "digitalocean",
+      "image_id": 1015253,
+      "region_id": 5,
+      "size_id": 66,
+      "snapshot_name": "docker {{timestamp}}",
+      "droplet_name": "docker"
+    }
+  ],
 
   "provisioners": [
     { "type": "file",
       "source": "{{user `ssh_pub_key`}}",
-      "destination": "/ssh_key.pub"
+      "destination": "/tmp/ssh_key.pub"
     },
     { "type": "shell",
       "scripts": [
@@ -37,4 +45,5 @@
       "vagrantfile_template": "templates/aws_vagrantfile"
     }
   }]
+
 }
