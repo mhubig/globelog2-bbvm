@@ -1,176 +1,40 @@
 {
   "variables": {
-    "ssh_pub_key": "",
+    "ssh_pub_key": "./id_docker.pub"
   },
 
-  "builders": [
+  "builders": [{
+    "type": "amazon-ebs",
+    "region": "eu-west-1",
+    "source_ami": "ami-8e987ef9",
+    "instance_type": "c1.xlarge",
+    "ssh_username": "ubuntu",
+    "ami_name": "docker {{timestamp}}",
+    "ami_description": "docker image"
+  }],
 
-    {
-      "type": "amazon-ebs",
-      "region": "eu-west-1",
-      "source_ami": "ami-8e987ef9",
-      "instance_type": "c1.xlarge",
-      "ssh_username": "ubuntu",
-      "ami_name": "docker {{timestamp}}",
-      "ami_description": "docker image"
+  "provisioners": [
+    { "type": "file",
+      "source": "{{user `ssh_pub_key`}}",
+      "destination": "/ssh_key.pub"
     },
+    { "type": "shell",
+      "scripts": [
+        "scripts/base.sh",
+        "scripts/vagrant.sh",
+        "scripts/kernel.sh",
+        "scripts/docker.sh"
+      ],
+      "execute_command":
+        "chmod +x {{ .Path }}; {{ .Vars }} sudo -E '{{ .Path }}'"
+    }
+  ],
 
-    {
-      "type": "digitalocean",
-      "image_id": 1015253,
-      "region_id": 4,
-      "size_id": 61,
-      "snapshot_name": "docker {{timestamp}}",
-      "droplet_name": "docker"
-    },
-
-    {
-      "vm_name": "docker",
-      "type": "vmware",
-      "guest_os_type": "ubuntu-64",
-      "disk_size": 40960,
-      "vmx_data": {
-        "memsize": "1024",
-        "numvcpus": "1",
-        "cpuid.coresPerSocket": "1"
-      },
-      "http_directory": "http",
-      "iso_url":
-        "http://releases.ubuntu.com/12.04/ubuntu-12.04.3-server-amd64.iso",
-      "iso_checksum":
-        "61d5e67c70d97b33c13537461a0b153b41304ef412bb0e9d813bb157068c3c65",
-      "iso_checksum_type": "sha256",
-      "ssh_username": "vagrant",
-      "ssh_password": "vagrant",
-      "ssh_wait_timeout": "20m",
-      "tools_upload_flavor": "linux",
-      "boot_wait": "5s",
-      "boot_command": [
-        "<esc><esc><enter><wait>",
-        "/install/vmlinuz auto",
-        " console-setup/ask_detect=false",
-        " console-setup/layoutcode=us",
-        " console-setup/modelcode=pc105",
-        " debconf/frontend=noninteractive",
-        " debian-installer=en_US",
-        " fb=false",
-        " initrd=/install/initrd.gz",
-        " kbd-chooser/method=us",
-        " keyboard-configuration/layout=USA",
-        " keyboard-configuration/variant=USA",
-        " locale=en_US",
-        " netcfg/get_domain=vm",
-        " netcfg/get_hostname=vagrant",
-        " noapic",
-        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg",
-        " -- ",
-        "<enter>"],
-      "floppy_files": [
-        "floppy/vmware9.compat_mm.patch",
-        "floppy/vmware9.k3.8rc4.patch",
-        "floppy/vmtools.inode.c.patch"],
-      "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now"
-    },
-
-    {
-      "vm_name": "docker",
-      "type": "virtualbox",
-      "guest_os_type": "Ubuntu_64",
-      "disk_size": 40960,
-      "vboxmanage": [
-        ["modifyvm", "{{.Name}}", "--memory", "1024"],
-        ["modifyvm", "{{.Name}}", "--cpus", "1"]],
-      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
-      "virtualbox_version_file": ".vbox_version",
-      "http_directory": "http",
-      "iso_url":
-        "http://releases.ubuntu.com/12.04/ubuntu-12.04.3-server-amd64.iso",
-      "iso_checksum":
-        "61d5e67c70d97b33c13537461a0b153b41304ef412bb0e9d813bb157068c3c65",
-      "iso_checksum_type": "sha256",
-      "ssh_username": "vagrant",
-      "ssh_password": "vagrant",
-      "ssh_wait_timeout": "20m",
-      "boot_wait": "5s",
-      "boot_command": [
-        "<esc><esc><enter><wait>",
-        "/install/vmlinuz auto",
-        " console-setup/ask_detect=false",
-        " console-setup/layoutcode=us",
-        " console-setup/modelcode=pc105",
-        " debconf/frontend=noninteractive",
-        " debian-installer=en_US",
-        " fb=false",
-        " initrd=/install/initrd.gz",
-        " kbd-chooser/method=us",
-        " keyboard-configuration/layout=USA",
-        " keyboard-configuration/variant=USA",
-        " locale=en_US",
-        " netcfg/get_domain=vm",
-        " netcfg/get_hostname=vagrant",
-        " noapic" ,
-        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg",
-        " -- ",
-      "<enter>"],
-      "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now"
-    }],
-
-    "provisioners": [
-
-      { "type": "file",
-        "source": "{{user `ssh_pub_key`}}",
-        "destination": "/ssh_key.pub"
-      },
-      { "type": "shell",
-        "scripts": [
-          "script/base.sh",
-          "script/vagrant.sh",
-          "script/kernel.sh",
-          "script/docker.sh",
-          "script/docker_app.sh"
-        ],
-        "override": {
-          "virtualbox": {
-            "execute_command":
-            "echo 'vagrant'|{{.Vars}} sudo -E -S bash '{{.Path}}'"
-          },
-          "vmware": {
-            "execute_command":
-            "echo 'vagrant'|{{.Vars}} sudo -E -S bash '{{.Path}}'"
-          },
-          "amazon-ebs": {
-            "execute_command":
-            "chmod +x {{ .Path }}; {{ .Vars }} sudo -E '{{ .Path }}'"
-          },
-          "digitalocean": {
-            "execute_command":
-            "chmod +x {{ .Path }}; {{ .Vars }} sudo -E '{{ .Path }}'"
-          }}
-      },
-
-      {
-        "type": "shell",
-        "scripts": [
-          "script/vmtools.sh",
-          "script/cleanup.sh",
-          "script/zerodisk.sh"],
-        "only": ["vmware", "virtualbox"],
-        "override": {
-          "virtualbox": {
-            "execute_command":
-            "echo 'vagrant'|{{.Vars}} sudo -E -S bash '{{.Path}}'"
-          },
-          "vmware": {
-            "execute_command":
-            "echo 'vagrant'|{{.Vars}} sudo -E -S bash '{{.Path}}'"
-          }}
-      }],
-
-    "post-processors": [{
-      "type": "vagrant",
-      "output": "docker_{{.Provider}}.box",
-      "aws": {
-        "vagrantfile_template": "templates/aws_vagrantfile"
-      }
-    }]
+  "post-processors": [{
+    "type": "vagrant",
+    "output": "docker_{{.Provider}}.box",
+    "aws": {
+      "vagrantfile_template": "templates/aws_vagrantfile"
+    }
+  }]
 }
