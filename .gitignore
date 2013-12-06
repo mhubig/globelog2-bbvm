@@ -1,0 +1,8 @@
+# files
+*.py[cod]
+*.box
+
+# folders
+output-vmware/
+packer_cache/
+.vagrant/
