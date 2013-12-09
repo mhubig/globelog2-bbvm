@@ -3,6 +3,7 @@
 *.box
 
 # folders
+keys/
 output-vmware/
 packer_cache/
 .vagrant/
