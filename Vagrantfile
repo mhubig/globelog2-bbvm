@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 BOX_NAME     = "docker"
-SSH_PRIVKEY  = ENV['SSH_PRIVKEY']  || "~/.ssh/id_docker"
+SSH_PRIVKEY  = ENV['SSH_PRIVKEY']  || "./keys/id_docker"
 KEYPAIR_NAME = ENV['KEYPAIR_NAME'] || BOX_NAME
 
 AWS_ACCESS_KEY = ENV['AWS_ACCESS_KEY_ID']     || "your aws access key"
