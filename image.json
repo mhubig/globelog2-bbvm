@@ -13,7 +13,7 @@
       "ami_description": "docker image"
     },
     { "type": "digitalocean",
-      "image_id": 1015253,
+      "image_id": "1015253",
       "region_id": 5,
       "size_id": 66,
       "snapshot_name": "docker {{timestamp}}",
