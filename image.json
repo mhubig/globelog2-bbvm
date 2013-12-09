@@ -1,6 +1,6 @@
 {
   "variables": {
-    "ssh_pub_key": "./id_docker.pub"
+    "ssh_pub_key": "keys/id_docker.pub"
   },
 
   "builders": [
